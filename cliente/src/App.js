@@ -2,7 +2,12 @@ import './App.css';
 import { useState } from "react";
 import axios from "axios";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Swal from 'sweetalert2'
 
+
+
+//asiganamos valores,creando constantes para gestionar el estado
+//utilizamos el useState, importando el {useState} de react
 function App() {
   const [nombre, setNombre] = useState("");
   const [edad, setEdad] = useState(0);
@@ -13,11 +18,11 @@ function App() {
 
   const [editar, setEditar] = useState(false);
   
-  const [empleados, setEmpleados] = useState([]); 
+  const [empleados, setEmpleados] = useState([]); //creamos la lista de empleados
 
   const add = () => {
-    axios.post("http://localhost:3001/create",{
-      nombre: nombre,
+    axios.post("http://localhost:3001/create",{ //instalamos axios que es una 
+      nombre: nombre,                           //lib de javascript para havcer peticiones de forma sencilla.
       edad: edad,
       pais: pais,
       cargo: cargo,
@@ -25,6 +30,12 @@ function App() {
     }).then(() => {
       getEmpleados();
       limpiarCampos();
+      Swal.fire({
+        title:"<strong>registrado correctamente</strong>",
+        html: "<i>El empleado <strong> "+nombre+" </strong> fue registrado con exito</i>",
+        icon:'success'
+      })
+
     });
   };
 
@@ -39,15 +50,45 @@ function App() {
     }).then(() => {
       getEmpleados();
       limpiarCampos();
+      Swal.fire({
+        title:"<strong>actualizado correctamente</strong>",
+        html: "<i>El empleado <strong> "+nombre+" </strong> fue actualizado con exito</i>",
+        icon:'success'
+      })
     });
   };
 
   const deleteEmple = (id) => {
-    axios.delete(`http://localhost:3001/delete/${id}`).then(() => {
-      getEmpleados();
-      limpiarCampos();
-    });
-};
+    
+      Swal.fire({
+        title: "seguro que quieres eliminar?",
+        text: "no podras revertir el proceso!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "si, eliminar!"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          axios.delete(`http://localhost:3001/delete/${id}`).then(() => {
+            getEmpleados();
+            limpiarCampos();
+          Swal.fire(
+            'Elimiando!',
+            'tu registro fue eliminado correctamente.',
+            'success'
+          );
+        });
+        };
+      });
+  }
+       
+
+
+  
+    
+ 
+  
 
   const limpiarCampos = () => {
     setAnios("");
@@ -70,12 +111,16 @@ function App() {
     setId(val.id);
   }
 
+
+    //creamos otro metodo que llame todos los empleados
   const getEmpleados = () => {
-    axios.get("http://localhost:3001/Empleados").then((response) => {
+    axios.get("http://localhost:3001/Empleados").then((response) => { //cuando obtenga la respuesta lo guarda en una variable response
       setEmpleados(response.data);
     });
   };
 
+  //Creamos variables que van a gestionar los valores que se van agregando a los campos
+  //para realizar esto, cada uno de los campos tendra un evento interno.
   return (
     <div className="container">
       <div className="card text-center">
@@ -88,7 +133,7 @@ function App() {
             <input 
               type="text"
               onChange={(event) => {
-                setNombre(event.target.value);
+                setNombre(event.target.value);  //el event tiene la info de los campos, es como decir: (de aqui de este campo quiero esto, y lo asigno a setnombre)
               }}
               className="form-control" value={nombre} 
               placeholder="Ingrese el nombre del empleado" 
@@ -173,8 +218,10 @@ function App() {
     </tr>
   </thead>
   <tbody>
-  {empleados.map((val, key) => {
-            return <tr key={val.id}>
+
+
+  {empleados.map((val, key) => { //extraer los valores que vienen desde la appi el .map es patra extraer todos los valores
+            return <tr key={val.id}> 
             <th>{val.id}</th>
             <td>{val.nombre}</td>
             <td>{val.edad}</td>
